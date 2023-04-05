@@ -16,89 +16,91 @@ def solution(a, b, c):
 
 # terms for the Bertin & Romeo dispersion relation (no drag)
 
-def A(beta):
+def A(xi):
 
-    return beta/16
+    return xi/16
 
-def B(lamb, alpha, beta):
+def B(lamb, epsilon, xi):
 
-    return lamb *((beta+1)*lamb - (alpha+beta))/4
+    return lamb *((xi+1)*lamb - (epsilon+xi))/4
 
-def C(lamb, alpha):
+def C(lamb, epsilon):
 
-    return lamb**4 -lamb**3 *(alpha+1)
+    return lamb**4 -lamb**3 *(epsilon+1)
 
 # terms for the Longarini 2022 dispersion relation without backreaction
 
-def B_st(lamb, alpha, beta, st):
+def B_st(lamb, epsilon, xi, st):
 
-    return lamb *((beta + 1 + 1/(st**2))*lamb - (alpha + beta))/4
+    return lamb *((xi + 1 + 1/(st**2))*lamb - (epsilon + xi))/4
 
-def C_st(lamb, alpha,st):
+def C_st(lamb, epsilon,st):
 
-    return lamb**4 * (1 + st**(-2)) - lamb**3 * (1 + alpha + (1+alpha)/(st**2))
+    return lamb**4 * (1 + st**(-2)) - lamb**3 * (1 + epsilon + (1+epsilon)/(st**2))
 
 # terms for the Longarini 2022 dispersion relation with backreaction
 
-def B_st_BR(lamb, alpha, beta, st):
+def B_st_BR(lamb, epsilon, xi, st):
 
-    return lamb *((beta + 1 + 1/(st**2) + alpha*(1+beta) /(st**2) + 
-                   alpha**2 * beta /(st**2))*lamb - (alpha+beta))/4
+    return lamb *((xi + 1 + 1/(st**2) + epsilon*(1+xi) /(st**2) + 
+                   epsilon**2 * xi /(st**2))*lamb - (epsilon+xi))/4
 
-def C_st_BR(lamb, alpha,st):
+def C_st_BR(lamb, epsilon,st):
 
-    return lamb**4 * (1 + st**(-2) + 2*alpha/(st**2) + alpha**2 /(st**2)
-                     )-lamb**3 *(alpha+1 + (1+alpha)/(st**2) + (2*alpha*(1+alpha))/(st**2) 
-                                +(1+alpha)*alpha**2 /(st**2))
+    return lamb**4 * (1 + st**(-2) + 2*epsilon/(st**2) + epsilon**2 /(st**2)
+                     )-lamb**3 *(epsilon+1 + (1+epsilon)/(st**2) + (2*epsilon*(1+epsilon))/(st**2) 
+                                +(1+epsilon)*epsilon**2 /(st**2))
 
 
-def marg_stab(lamb, alpha, beta, st, Q):
+def marg_stab(epsilon, xi, st, Q):
 
     ''' Marginal stability curve as a function of the dimensionless perturbation wavelength
     lamb = dimensionless perturbation wavelength (usually from 0 to 1+dtg ratio)
-    alpha = dtg ratio
-    beta = relative temperature
+    epsilon = dtg ratio
+    xi = relative temperature
     st = stokes number
     Q = which marginal stability curve: Q=0 Bertin&Romeo (no drag), Q=1 No backreaction, Q=2 backreaction
     '''
-
+    
+    lamb = np.linspace(0,1+epsilon, 500)
     if (Q == 0):
-        return solution(A(beta), B(lamb, alpha, beta), C(lamb, alpha))
+        return [lamb,solution(A(xi), B(lamb, epsilon, xi), C(lamb, epsilon))]
     
     if (Q == 1):
-        return solution(A(beta), B_st(lamb, alpha, beta, st), C_st(lamb, alpha, st))
+        return [lamb,solution(A(xi), B_st(lamb, epsilon, xi, st), C_st(lamb, epsilon, st))]
     
     if (Q == 2):
-        return solution(A(beta), B_st_BR(lamb, alpha, beta, st), C_st_BR(lamb, alpha, st))
+        return [lamb,solution(A(xi), B_st_BR(lamb, epsilon, xi, st), C_st_BR(lamb, epsilon, st))]
     
     else:
         print('Error with Q')
         return 0
+    
 
 def const_jeanslength(hr, mstar, radius, sigmatot):
 
     return 2 * hr**2 * mstar/(radius * sigmatot)
 
 
-def most_unst_wavelength_dless(lamb, alpha, beta, st, Q):
+def most_unst_wavelength_dless(epsilon, xi, st, Q):
 
     ''' Most unstable wavelength in dimensionless unit 
     lamb = dimensionless perturbation wavelength (usually from 0 to 1+dtg ratio)
-    alpha = dtg ratio
-    beta = relative temperature
+    epsilon = dtg ratio
+    xi = relative temperature
     st = stokes number
     Q = which marginal stability curve: Q=0 Bertin&Romeo (no drag), Q=1 No backreaction, Q=2 backreaction
     '''
+    
+    return marg_stab(epsilon, xi, st, Q)[0][np.argmax(marg_stab(epsilon, xi, st, Q)[1])]
 
-    return lamb[np.argmax(marg_stab(lamb, alpha, beta, st, Q))]
 
-
-def most_unst_wavelength_dimensional(lamb, alpha, beta, st, Q, hr, mstar, radius, sigmatot):
+def most_unst_wavelength_dimensional(lamb, epsilon, xi, st, Q, hr, mstar, radius, sigmatot):
 
     ''' Most unstable wavelength in physics unit 
     lamb = dimensionless perturbation wavelength (usually from 0 to 1+dtg ratio)
-    alpha = dtg ratio
-    beta = relative temperature
+    epsilon = dtg ratio
+    xi = relative temperature
     st = stokes number
     Q = which marginal stability curve: Q=0 Bertin&Romeo (no drag), Q=1 No backreaction, Q=2 backreaction
     hr = aspect ratio at the radius of interest
@@ -106,33 +108,35 @@ def most_unst_wavelength_dimensional(lamb, alpha, beta, st, Q, hr, mstar, radius
     sigmatot = total surface density at the radius of interest
     '''
 
-    return most_unst_wavelength_dless(lamb, alpha, beta, st, Q
+    return most_unst_wavelength_dless(lamb, epsilon, xi, st, Q
                 ) * 2 * const_jeanslength(hr, mstar, radius, sigmatot)
 
-def jeans_mass_dless(lamb, alpha, beta, st, Q):
+
+def jeans_mass_dless(lamb, epsilon, xi, st, Q):
 
     ''' Jeans mass in dimensionless units 
     lamb = dimensionless perturbation wavelength (usually from 0 to 1+dtg ratio)
-    alpha = dtg ratio
-    beta = relative temperature
+    epsilon = dtg ratio
+    xi = relative temperature
     st = stokes number
     Q = which marginal stability curve: Q=0 Bertin&Romeo (no drag), Q=1 No backreaction, Q=2 backreaction
     '''
 
-    return most_unst_wavelength_dless(lamb, alpha, beta, st, Q) ** 2
+    return most_unst_wavelength_dless(lamb, epsilon, xi, st, Q) ** 2
 
-def jeans_mass_dimensional(lamb, alpha, beta, st, Q, hr, mstar, radius, sigmatot):
+
+def jeans_mass_dimensional(lamb, epsilon, xi, st, Q, hr, mstar, radius, sigmatot):
 
     ''' Jeans mass in physical units
     lamb = dimensionless perturbation wavelength (usually from 0 to 1+dtg ratio)
-    alpha = dtg ratio
-    beta = relative temperature
+    epsilon = dtg ratio
+    xi = relative temperature
     st = stokes number
     Q = which marginal stability curve: Q=0 Bertin&Romeo (no drag), Q=1 No backreaction, Q=2 backreaction
     hr = aspect ratio at the radius of interest
     radius = radius of interest
     sigmatot = total surface density at the radius of interest
     '''
-    
+
     return sigmatot * most_unst_wavelength_dimensional(
-        lamb, alpha, beta, st, Q, hr, mstar, radius, sigmatot)**2
+        lamb, epsilon, xi, st, Q, hr, mstar, radius, sigmatot)**2
