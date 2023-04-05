@@ -95,10 +95,9 @@ def most_unst_wavelength_dless(epsilon, xi, st, Q):
     return marg_stab(epsilon, xi, st, Q)[0][np.argmax(marg_stab(epsilon, xi, st, Q)[1])]
 
 
-def most_unst_wavelength_dimensional(lamb, epsilon, xi, st, Q, hr, mstar, radius, sigmatot):
+def most_unst_wavelength_dimensional(epsilon, xi, st, Q, hr, mstar, radius, sigmatot):
 
     ''' Most unstable wavelength in physics unit 
-    lamb = dimensionless perturbation wavelength (usually from 0 to 1+dtg ratio)
     epsilon = dtg ratio
     xi = relative temperature
     st = stokes number
@@ -108,11 +107,11 @@ def most_unst_wavelength_dimensional(lamb, epsilon, xi, st, Q, hr, mstar, radius
     sigmatot = total surface density at the radius of interest
     '''
 
-    return most_unst_wavelength_dless(lamb, epsilon, xi, st, Q
+    return most_unst_wavelength_dless(epsilon, xi, st, Q
                 ) * 2 * const_jeanslength(hr, mstar, radius, sigmatot)
 
 
-def jeans_mass_dless(lamb, epsilon, xi, st, Q):
+def jeans_mass_dless(epsilon, xi, st, Q):
 
     ''' Jeans mass in dimensionless units 
     lamb = dimensionless perturbation wavelength (usually from 0 to 1+dtg ratio)
@@ -122,10 +121,10 @@ def jeans_mass_dless(lamb, epsilon, xi, st, Q):
     Q = which marginal stability curve: Q=0 Bertin&Romeo (no drag), Q=1 No backreaction, Q=2 backreaction
     '''
 
-    return most_unst_wavelength_dless(lamb, epsilon, xi, st, Q) ** 2
+    return most_unst_wavelength_dless(epsilon, xi, st, Q) ** 2
 
 
-def jeans_mass_dimensional(lamb, epsilon, xi, st, Q, hr, mstar, radius, sigmatot):
+def jeans_mass_dimensional(epsilon, xi, st, Q, hr, mstar, radius, sigmatot):
 
     ''' Jeans mass in physical units
     lamb = dimensionless perturbation wavelength (usually from 0 to 1+dtg ratio)
@@ -139,4 +138,4 @@ def jeans_mass_dimensional(lamb, epsilon, xi, st, Q, hr, mstar, radius, sigmatot
     '''
 
     return sigmatot * most_unst_wavelength_dimensional(
-        lamb, epsilon, xi, st, Q, hr, mstar, radius, sigmatot)**2
+        epsilon, xi, st, Q, hr, mstar, radius, sigmatot)**2
